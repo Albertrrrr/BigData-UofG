@@ -89,11 +89,10 @@ public class AssessedExercise {
 	
 	
 	public static List<DocumentRanking> rankDocuments(SparkSession spark, String queryFile, String newsFile) {
-		
 		// Load queries and news articles
 		Dataset<Row> queriesjson = spark.read().text(queryFile);
 		Dataset<Row> newsjson = spark.read().text(newsFile); // read in files as string rows, one row per article
-		
+
 		// Perform an initial conversion from Dataset<Row> to Query and NewsArticle Java objects
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
@@ -104,7 +103,11 @@ public class AssessedExercise {
 
 		// Generate needed Dataset which only have 3 elements
 		Dataset<ArticleNeeded> news_Filter = newsjson.map(new newsInitialFilter(), Encoders.bean(ArticleNeeded.class));
-	 	news_Filter.select("id", "title", "contents").show(5,false);
+		news_Filter.select("id", "title", "contents").show(5,false);
+
+		// Generate json to check
+		// String path = "src/resJson/res_2_18_01.json";
+		// news_Filter.select("id", "title", "contents").limit(2).write().json(path);
 
 
 

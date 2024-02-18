@@ -6,7 +6,9 @@ import org.apache.spark.sql.Row;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import uk.ac.gla.dcs.bigdata.studentstructures.ArticleNeeded;
+import uk.ac.gla.dcs.bigdata.providedutilities.TextPreProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +49,19 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
 
         // Check items and set contents.
         // System.out.println("Contents Count: " + Integer.toString(filteredContentStrings.size()));
-        filteredArticle.setContents(filteredContentStrings);
+
+        // processing Text
+        TextPreProcessor text = new TextPreProcessor(); // processor object
+        List<String> processedText = new ArrayList<>(); // result storage
+
+        // for-loop to process format function
+        for(String term: filteredContentStrings){
+            List<String> processedTerms = text.process(term);
+            // System.out.println(processedTerms); check
+            String processedRes = String.join(" ",processedTerms); // every word with a space
+            processedText.add(processedRes);
+        }
+        filteredArticle.setContents(processedText);
 
         return filteredArticle;
     }
