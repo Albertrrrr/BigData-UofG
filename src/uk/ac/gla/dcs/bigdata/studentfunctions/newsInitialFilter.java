@@ -51,14 +51,13 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
         // System.out.println("Contents Count: " + Integer.toString(filteredContentStrings.size()));
 
         // processing Text
-        TextPreProcessor text = new TextPreProcessor(); // processor object
-        List<String> processedText = new ArrayList<>(); // result storage
+        TextPreProcessor text = new TextPreProcessor();
+        List<String> processedText = new ArrayList<>();
 
-        // for-loop to process format function
         for(String term: filteredContentStrings){
             List<String> processedTerms = text.process(term);
-            // System.out.println(processedTerms); check
-            String processedRes = String.join(" ",processedTerms); // every word with a space
+            //System.out.println(processedTerms);
+            String processedRes = String.join(" ",processedTerms);
             processedText.add(processedRes);
         }
         filteredArticle.setContents(processedText);
