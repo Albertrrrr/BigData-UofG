@@ -8,11 +8,14 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
+import org.apache.spark.sql.catalyst.expressions.RowNumber;
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.studentfunctions.newsInitialFilter;
+import uk.ac.gla.dcs.bigdata.studentstructures.ArticleNeeded;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -34,7 +37,7 @@ public class AssessedExercise {
 		// The code submitted for the assessed exerise may be run in either local or remote modes
 		// Configuration of this will be performed based on an environment variable
 		String sparkMasterDef = System.getenv("spark.master");
-		if (sparkMasterDef==null) sparkMasterDef = "local[2]"; // default is local mode with two executors
+		if (sparkMasterDef==null) sparkMasterDef = "local[*]"; // default is local mode with two executors
 		
 		String sparkSessionName = "BigDataAE"; // give the session a name
 		
@@ -94,14 +97,19 @@ public class AssessedExercise {
 		// Perform an initial conversion from Dataset<Row> to Query and NewsArticle Java objects
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
-		
+		news.show(5);
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
-		queries.show();
-		//show 2 elements of the contents
-		news.show(2);
-		
+
+		// Generate needed Dataset which only have 3 elements
+		Dataset<ArticleNeeded> news_Filter = newsjson.map(new newsInitialFilter(), Encoders.bean(ArticleNeeded.class));
+	 	news_Filter.select("id", "title", "contents").show(5,false);
+
+
+
+
+
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
 	
