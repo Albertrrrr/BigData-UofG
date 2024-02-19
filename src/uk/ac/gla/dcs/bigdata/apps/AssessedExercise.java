@@ -109,7 +109,7 @@ public class AssessedExercise {
 		// String path = "src/resJson/res_2_18_01.json";
 		// news_Filter.select("id", "title", "contents").limit(2).write().json(path);
 
-
+		queries.show(5);
 
 
 
