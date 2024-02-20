@@ -1,21 +1,36 @@
 package uk.ac.gla.dcs.bigdata.apps;
 
 import java.io.File;
-import java.util.List;
+import java.util.*;
+
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FilterFunction;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
 import org.apache.spark.sql.catalyst.expressions.RowNumber;
+import scala.Tuple2;
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
+import uk.ac.gla.dcs.bigdata.providedutilities.DPHScorer;
+import uk.ac.gla.dcs.bigdata.studentfunctions.ComputingDPH;
 import uk.ac.gla.dcs.bigdata.studentfunctions.newsInitialFilter;
 import uk.ac.gla.dcs.bigdata.studentstructures.ArticleNeeded;
+import uk.ac.gla.dcs.bigdata.studentstructures.ScoreDistanceMap;
+
+import static org.apache.spark.sql.functions.*;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -109,7 +124,38 @@ public class AssessedExercise {
 		// String path = "src/resJson/res_2_18_01.json";
 		// news_Filter.select("id", "title", "contents").limit(2).write().json(path);
 
-		queries.show(5);
+
+		//Computing DPH Score
+		ComputingDPH dphGenerator = new ComputingDPH();
+		Dataset<RankedResult> dphScore = dphGenerator.computingDPH(spark,queries,news_Filter);
+//		dphScore.show(5);
+
+		Dataset<ScoreDistanceMap> dphScoreAndDistance = dphGenerator.computingDPHScoreAndDistance(spark,queries,news_Filter);
+		dphScoreAndDistance.show(false);
+
+//		JavaRDD<RankedResult> dphScoreRDD = dphScore.javaRDD();
+//		JavaRDD<RankedResult> filteredDphScoreRDD = dphScoreRDD.filter(
+//				result -> !Double.isNaN(result.getScore())
+//		);
+//
+//		JavaRDD<RankedResult> sortedFilteredDphScoreRDD = filteredDphScoreRDD.sortBy(
+//				result -> result.getScore(),
+//				false, // false 表示降序
+//				filteredDphScoreRDD.partitions().size() // 保持原有的分区数
+//		);
+//
+//		List<RankedResult> collectedSortedResults = sortedFilteredDphScoreRDD.collect();
+//
+//		// 打印结果
+//		for (RankedResult result : collectedSortedResults) {
+//			System.out.println("Score: " + result.getScore());
+//		}
+//
+//		System.out.println("Counted number : " + Integer.toString(collectedSortedResults.size()));
+
+
+
+
 
 
 
