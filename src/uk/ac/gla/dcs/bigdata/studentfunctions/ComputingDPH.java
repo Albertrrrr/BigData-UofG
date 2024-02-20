@@ -19,95 +19,12 @@ import uk.ac.gla.dcs.bigdata.studentstructures.ScoreDistanceMap;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Double.NaN;
 
 public class ComputingDPH implements Serializable {
-    private static final long serialVersionUID = -2905684103776472843L;
-    public Dataset<RankedResult> computingDPH(SparkSession spark, Dataset<Query> queries, Dataset<ArticleNeeded> news_Filter ){
-        List<Query> queriesList = queries.collectAsList();
-
-        // 广播查询集
-        JavaSparkContext sparkContext = new JavaSparkContext(spark.sparkContext());
-        Broadcast<List<Query>> queriesBroadcast = sparkContext.broadcast(queriesList);
-
-        // 计算文档长度的Dataset
-        Dataset<Integer> documentLengths = news_Filter.map(new MapFunction<ArticleNeeded, Integer>() {
-            @Override
-            public Integer call(ArticleNeeded article) throws Exception {
-                return article.getContents().size();
-            }
-        }, Encoders.INT());
-
-        // 使用action操作如reduce来聚合结果时，通常需要将Dataset转换为RDD，因为Dataset API没有提供直接的reduce操作
-        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
-        long totalLength = documentLengths.javaRDD().reduce((a, b) -> a + b);
-
-        // 计算总文档数
-        long totalDocs = news_Filter.count();
-
-        // 计算平均文档长度
-        double averageDocumentLengthInCorpus = (double) totalLength / totalDocs;
-
-        JavaRDD<ArticleNeeded> newsRDD = news_Filter.toJavaRDD();
-        JavaRDD<String> words = newsRDD.flatMap(article ->
-                article.getContents().stream()
-                        .flatMap(content -> Arrays.stream(content.split(" ")))
-                        .iterator()
-        );
-
-        // 计算词频
-        JavaPairRDD<String, Integer> wordCounts = words.mapToPair(word -> new Tuple2<>(word, 1))
-                .reduceByKey((count1, count2) -> count1 + count2);
-
-        // 收集并广播词频Map
-        Map<String, Integer> termFrequencies = wordCounts.collectAsMap();
-        Broadcast<Map<String, Integer>> termFrequenciesBroadcast = sparkContext.broadcast(termFrequencies);
-
-        Dataset<RankedResult> dphScore = news_Filter.flatMap(new FlatMapFunction<ArticleNeeded, RankedResult>() {
-            @Override
-            public Iterator<RankedResult> call(ArticleNeeded articleNeeded) throws Exception {
-                List<RankedResult> results = new ArrayList<>();
-                List<Query> queries = queriesBroadcast.value();
-
-                int currentDocumentLength = articleNeeded.getContents().size(); // 文档长度
-
-                for (Query query : queries) {
-                    for (String term : query.getQueryTerms()) {
-                        // 当前文档中术语的频率
-                        long termFrequencyInCurrentDocument = articleNeeded.getContents().stream()
-                                .flatMap(content -> Arrays.stream(content.split(" "))) // 分割每个字符串并扁平化
-                                .filter(word -> word.equalsIgnoreCase(term)) // 忽略大小写进行比较
-                                .count();
-                        // 语料库中术语的总频率
-                        int totalTermFrequencyInCorpus = termFrequenciesBroadcast.value().getOrDefault(term, 0);
-//                        System.out.println("Term :"  + term);
-//						System.out.println("termFrequencyInCurrentDocument: " + Long.toString(termFrequencyInCurrentDocument));
-//						System.out.println("totalTermFrequencyInCorpus: " + Long.toString(totalTermFrequencyInCorpus));
-//						System.out.println("currentDocumentLength: " + Long.toString(currentDocumentLength));
-//						System.out.println("totalDocs: " + Long.toString(totalDocs));
-//						System.out.println("averageDocumentLengthInCorpus: " + Double.toString(averageDocumentLengthInCorpus));
-
-                        // 计算DPH得分
-                        double dphScore = DPHScorer.getDPHScore(
-                                (short) termFrequencyInCurrentDocument,
-                                totalTermFrequencyInCorpus,
-                                currentDocumentLength,
-                                averageDocumentLengthInCorpus,
-                                totalDocs
-                        );
-
-                        // 添加到结果
-                        results.add(new RankedResult(articleNeeded.getId(),null,dphScore));
-                    }
-                }
-
-                return results.iterator();
-            }
-        },Encoders.bean(RankedResult.class));
-        return dphScore;
-    }
-
+    private static final long serialVersionUID = 3905684103776472843L;
     public Dataset<ScoreDistanceMap> computingDPHScoreAndDistance (SparkSession spark, Dataset<Query> queries, Dataset<ArticleNeeded> news_Filter ){
         List<Query> queriesList = queries.collectAsList();
 
@@ -119,7 +36,10 @@ public class ComputingDPH implements Serializable {
         Dataset<Integer> documentLengths = news_Filter.map(new MapFunction<ArticleNeeded, Integer>() {
             @Override
             public Integer call(ArticleNeeded article) throws Exception {
-                return article.getContents().size();
+                return article.getContents().stream()
+                        .flatMap(content -> Arrays.stream(content.split(" ")))
+                        .collect(Collectors.toList())
+                        .size();
             }
         }, Encoders.INT());
 
@@ -154,7 +74,11 @@ public class ComputingDPH implements Serializable {
                 List<ScoreDistanceMap> res = new ArrayList<>();
                 List<Query> queries = queriesBroadcast.value();
 
-                int currentDocumentLength = articleNeeded.getContents().size(); // 文档长度
+                // 文档长度
+                int currentDocumentLength = articleNeeded.getContents().stream()
+                        .flatMap(content -> Arrays.stream(content.split(" ")))
+                        .collect(Collectors.toList())
+                        .size();
 
                 TextDistanceCalculator distanceCalculator = new TextDistanceCalculator();
 
@@ -174,6 +98,13 @@ public class ComputingDPH implements Serializable {
                                 .count();
                         // 语料库中术语的总频率
                         int totalTermFrequencyInCorpus = termFrequenciesBroadcast.value().getOrDefault(term, 0);
+
+                        System.out.println("query: " + term);
+                        System.out.println("termFrequencyInCurrentDocument: " + Long.toString(termFrequencyInCurrentDocument));
+                        System.out.println("totalTermFrequencyInCorpus: " + Integer.toString(totalTermFrequencyInCorpus));
+                        System.out.println("currentDocumentLength: " + Integer.toString(currentDocumentLength));
+                        System.out.println("averageDocumentLengthInCorpus: " + Double.toString(averageDocumentLengthInCorpus));
+                        System.out.println("totalDocs: " + Long.toString(totalDocs));
 
                         // 计算DPH得分
                         double dphScore = DPHScorer.getDPHScore(

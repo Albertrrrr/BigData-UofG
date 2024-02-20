@@ -26,6 +26,7 @@ import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.providedutilities.DPHScorer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.ComputingDPH;
+import uk.ac.gla.dcs.bigdata.studentfunctions.Sorted;
 import uk.ac.gla.dcs.bigdata.studentfunctions.newsInitialFilter;
 import uk.ac.gla.dcs.bigdata.studentstructures.ArticleNeeded;
 import uk.ac.gla.dcs.bigdata.studentstructures.ScoreDistanceMap;
@@ -127,31 +128,14 @@ public class AssessedExercise {
 
 		//Computing DPH Score
 		ComputingDPH dphGenerator = new ComputingDPH();
-		Dataset<RankedResult> dphScore = dphGenerator.computingDPH(spark,queries,news_Filter);
-//		dphScore.show(5);
+//		Dataset<RankedResult> dphScore = dphGenerator.computingDPH(spark,queries,news_Filter);
+
 
 		Dataset<ScoreDistanceMap> dphScoreAndDistance = dphGenerator.computingDPHScoreAndDistance(spark,queries,news_Filter);
 		dphScoreAndDistance.show(false);
 
-//		JavaRDD<RankedResult> dphScoreRDD = dphScore.javaRDD();
-//		JavaRDD<RankedResult> filteredDphScoreRDD = dphScoreRDD.filter(
-//				result -> !Double.isNaN(result.getScore())
-//		);
-//
-//		JavaRDD<RankedResult> sortedFilteredDphScoreRDD = filteredDphScoreRDD.sortBy(
-//				result -> result.getScore(),
-//				false, // false 表示降序
-//				filteredDphScoreRDD.partitions().size() // 保持原有的分区数
-//		);
-//
-//		List<RankedResult> collectedSortedResults = sortedFilteredDphScoreRDD.collect();
-//
-//		// 打印结果
-//		for (RankedResult result : collectedSortedResults) {
-//			System.out.println("Score: " + result.getScore());
-//		}
-//
-//		System.out.println("Counted number : " + Integer.toString(collectedSortedResults.size()));
+		Sorted sortOperator = new Sorted();
+		sortOperator.ranking(spark,dphScoreAndDistance);
 
 
 
