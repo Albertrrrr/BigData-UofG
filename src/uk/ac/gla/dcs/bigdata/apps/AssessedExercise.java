@@ -136,7 +136,7 @@ public class AssessedExercise {
 
 		// Sort it
 		Sorted sortOperator = new Sorted();
-		List<DocumentRanking> documentRankingList = sortOperator.ranking(spark,dphScoreAndDistance,news);
+		List<DocumentRanking> documentRankingList = sortOperator.ranking(dphScoreAndDistance);
 
 
 		return documentRankingList; // replace this with the the list of DocumentRanking output by your topology
