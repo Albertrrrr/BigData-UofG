@@ -43,8 +43,6 @@ public class ComputingDPH implements Serializable {
             }
         }, Encoders.INT());
 
-        // 使用action操作如reduce来聚合结果时，通常需要将Dataset转换为RDD，因为Dataset API没有提供直接的reduce操作
-        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
         long totalLength = documentLengths.javaRDD().reduce((a, b) -> a + b);
 
         // 计算总文档数
@@ -62,7 +60,7 @@ public class ComputingDPH implements Serializable {
 
         // 计算词频
         JavaPairRDD<String, Integer> wordCounts = words.mapToPair(word -> new Tuple2<>(word, 1))
-                .reduceByKey((count1, count2) -> count1 + count2);
+                .reduceByKey(Integer::sum);
 
         // 收集并广播词频Map
         Map<String, Integer> termFrequencies = wordCounts.collectAsMap();
@@ -99,12 +97,13 @@ public class ComputingDPH implements Serializable {
                         // 语料库中术语的总频率
                         int totalTermFrequencyInCorpus = termFrequenciesBroadcast.value().getOrDefault(term, 0);
 
-                        System.out.println("query: " + term);
-                        System.out.println("termFrequencyInCurrentDocument: " + Long.toString(termFrequencyInCurrentDocument));
-                        System.out.println("totalTermFrequencyInCorpus: " + Integer.toString(totalTermFrequencyInCorpus));
-                        System.out.println("currentDocumentLength: " + Integer.toString(currentDocumentLength));
-                        System.out.println("averageDocumentLengthInCorpus: " + Double.toString(averageDocumentLengthInCorpus));
-                        System.out.println("totalDocs: " + Long.toString(totalDocs));
+//                        System.out.println("ID: " + articleNeeded.getId());
+//                        System.out.println("query: " + term);
+//                        System.out.println("termFrequencyInCurrentDocument: " + Long.toString(termFrequencyInCurrentDocument));
+//                        System.out.println("totalTermFrequencyInCorpus: " + Integer.toString(totalTermFrequencyInCorpus));
+//                        System.out.println("currentDocumentLength: " + Integer.toString(currentDocumentLength));
+//                        System.out.println("averageDocumentLengthInCorpus: " + Double.toString(averageDocumentLengthInCorpus));
+//                        System.out.println("totalDocs: " + Long.toString(totalDocs));
 
                         // 计算DPH得分
                         double dphScore = DPHScorer.getDPHScore(

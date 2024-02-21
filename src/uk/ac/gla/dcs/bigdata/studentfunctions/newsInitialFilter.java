@@ -47,6 +47,8 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
             filteredContentStrings = filteredContentStrings.subList(0, 5);
         }
 
+        filteredContentStrings.add(filteredArticle.getTitle());
+
         // Check items and set contents.
         // System.out.println("Contents Count: " + Integer.toString(filteredContentStrings.size()));
 
@@ -56,7 +58,6 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
 
         for(String term: filteredContentStrings){
             List<String> processedTerms = text.process(term);
-            //System.out.println(processedTerms);
             String processedRes = String.join(" ",processedTerms);
             processedText.add(processedRes);
         }

@@ -27,6 +27,7 @@ import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.providedutilities.DPHScorer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.ComputingDPH;
 import uk.ac.gla.dcs.bigdata.studentfunctions.Sorted;
+import uk.ac.gla.dcs.bigdata.studentfunctions.Valild;
 import uk.ac.gla.dcs.bigdata.studentfunctions.newsInitialFilter;
 import uk.ac.gla.dcs.bigdata.studentstructures.ArticleNeeded;
 import uk.ac.gla.dcs.bigdata.studentstructures.ScoreDistanceMap;
@@ -112,7 +113,6 @@ public class AssessedExercise {
 		// Perform an initial conversion from Dataset<Row> to Query and NewsArticle Java objects
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
-		news.show(5);
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
@@ -121,29 +121,20 @@ public class AssessedExercise {
 		Dataset<ArticleNeeded> news_Filter = newsjson.map(new newsInitialFilter(), Encoders.bean(ArticleNeeded.class));
 		news_Filter.select("id", "title", "contents").show(5,false);
 
-		// Generate json to check
-		// String path = "src/resJson/res_2_18_01.json";
-		// news_Filter.select("id", "title", "contents").limit(2).write().json(path);
+		 //Generate json to check
+		// Valild vid = new Valild();
+		// vid.toFile(spark,queries,news_Filter);
 
-
-		//Computing DPH Score
+		//Computing DPH Score and Distance
 		ComputingDPH dphGenerator = new ComputingDPH();
-//		Dataset<RankedResult> dphScore = dphGenerator.computingDPH(spark,queries,news_Filter);
+		Dataset<ScoreDistanceMap> dphScoreAndDistance = dphGenerator.computingDPHScoreAndDistance(spark,queries,news_Filter); // get DPHScore and Distance structure
 
-
-		Dataset<ScoreDistanceMap> dphScoreAndDistance = dphGenerator.computingDPHScoreAndDistance(spark,queries,news_Filter);
-		dphScoreAndDistance.show(false);
-
+		// Sort it
 		Sorted sortOperator = new Sorted();
-		sortOperator.ranking(spark,dphScoreAndDistance);
+		List<DocumentRanking> documentRankingList = sortOperator.ranking(spark,dphScoreAndDistance,news);
 
 
-
-
-
-
-
-		return null; // replace this with the the list of DocumentRanking output by your topology
+		return documentRankingList; // replace this with the the list of DocumentRanking output by your topology
 	}
 	
 	
