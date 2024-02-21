@@ -1,5 +1,6 @@
 package uk.ac.gla.dcs.bigdata.studentstructures;
 
+import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 
 import java.io.Serializable;
@@ -7,13 +8,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ScoreDistanceMap implements Serializable {
-    String id;
-    String title;
-    Map<Query, List<Double>> scoreAndDistance;
+    private String id;
+    private String title;
+    private NewsArticle article;
+    private Map<Query, List<Double>> scoreAndDistance;
 
-    public ScoreDistanceMap(String id, String title, Map<Query, List<Double>> scoreAndDistance) {
+    public ScoreDistanceMap(String id, String title, NewsArticle article, Map<Query, List<Double>> scoreAndDistance) {
         this.id = id;
         this.title = title;
+        this.article = article;
         this.scoreAndDistance = scoreAndDistance;
     }
 
@@ -42,5 +45,13 @@ public class ScoreDistanceMap implements Serializable {
 
     public void setScoreAndDistance(Map<Query, List<Double>> scoreAndDistance) {
         this.scoreAndDistance = scoreAndDistance;
+    }
+
+    public NewsArticle getArticle() {
+        return article;
+    }
+
+    public void setArticle(NewsArticle article) {
+        this.article = article;
     }
 }

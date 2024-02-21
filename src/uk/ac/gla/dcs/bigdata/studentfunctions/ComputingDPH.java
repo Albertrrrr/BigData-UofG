@@ -44,7 +44,6 @@ public class ComputingDPH implements Serializable {
         }, Encoders.INT());
 
         long totalLength = documentLengths.javaRDD().reduce((a, b) -> a + b);
-
         // 计算总文档数
         long totalDocs = news_Filter.count();
 
@@ -95,15 +94,10 @@ public class ComputingDPH implements Serializable {
                                 .filter(word -> word.equalsIgnoreCase(term)) // 忽略大小写进行比较
                                 .count();
                         // 语料库中术语的总频率
+                        if(termFrequencyInCurrentDocument == 0){
+                            continue;
+                        }
                         int totalTermFrequencyInCorpus = termFrequenciesBroadcast.value().getOrDefault(term, 0);
-
-//                        System.out.println("ID: " + articleNeeded.getId());
-//                        System.out.println("query: " + term);
-//                        System.out.println("termFrequencyInCurrentDocument: " + Long.toString(termFrequencyInCurrentDocument));
-//                        System.out.println("totalTermFrequencyInCorpus: " + Integer.toString(totalTermFrequencyInCorpus));
-//                        System.out.println("currentDocumentLength: " + Integer.toString(currentDocumentLength));
-//                        System.out.println("averageDocumentLengthInCorpus: " + Double.toString(averageDocumentLengthInCorpus));
-//                        System.out.println("totalDocs: " + Long.toString(totalDocs));
 
                         // 计算DPH得分
                         double dphScore = DPHScorer.getDPHScore(
@@ -118,11 +112,14 @@ public class ComputingDPH implements Serializable {
                         dphScoreSum += dphScore;
 
                     }
-                    numbers.add(dphScoreSum);
+                    numbers.add((double) dphScoreSum / query.getQueryTerms().size());
                     numbers.add(distance);
                     map.put(query,numbers);
                 }
-                res.add(new ScoreDistanceMap(articleNeeded.getId(),articleNeeded.getTitle(),map));
+                boolean anyNonZero = map.values().stream() // 将values集合转换为Stream
+                        .anyMatch(list -> !list.isEmpty() && !list.get(0).equals(0.0)); // 使用anyMatch检查是否存在第一个元素不是0.0的列表
+
+                if(anyNonZero == true){res.add(new ScoreDistanceMap(articleNeeded.getId(),articleNeeded.getTitle(),articleNeeded.getArticle(),map));}
 
                 return res.iterator();
             }

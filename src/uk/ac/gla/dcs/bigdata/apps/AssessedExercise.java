@@ -61,7 +61,11 @@ public class AssessedExercise {
 		// Create the Spark Configuration 
 		SparkConf conf = new SparkConf()
 				.setMaster(sparkMasterDef)
+				.set("spark.driver.maxResultSize", "4g")
+				.set("spark.executor.memory", "8g")
+				.set("spark.driver.memory", "8g")
 				.setAppName(sparkSessionName);
+
 		
 		// Create the spark session
 		SparkSession spark = SparkSession
@@ -77,6 +81,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news articles
+//		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json" ; // default is a sample of 5000 news articles
 		
 		// Call the student's code
 		List<DocumentRanking> results = rankDocuments(spark, queryFile, newsFile);
@@ -119,7 +124,7 @@ public class AssessedExercise {
 
 		// Generate needed Dataset which only have 3 elements
 		Dataset<ArticleNeeded> news_Filter = newsjson.map(new newsInitialFilter(), Encoders.bean(ArticleNeeded.class));
-		news_Filter.select("id", "title", "contents").show(5,false);
+		//news_Filter.show(5,false);
 
 		 //Generate json to check
 		// Valild vid = new Valild();

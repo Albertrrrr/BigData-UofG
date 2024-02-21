@@ -36,6 +36,8 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
         ArticleNeeded filteredArticle = new ArticleNeeded();
         filteredArticle.setId(originalArticle.getId());
         filteredArticle.setTitle(originalArticle.getTitle());
+        filteredArticle.setArticle(originalArticle);
+        
         List<String> filteredContentStrings = originalArticle.getContents().stream()
                 .filter(item -> item != null && "paragraph".equals(item.getSubtype())) //First filter out items that are not null and have a subtype of paragraph
                 .map(ContentItem::getContent) // Converts each ContentItem to string.
