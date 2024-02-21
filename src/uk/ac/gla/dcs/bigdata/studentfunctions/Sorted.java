@@ -24,6 +24,7 @@ import static org.apache.spark.sql.functions.col;
 public class Sorted implements Serializable {
 
     public List<DocumentRanking> ranking (Dataset<ScoreDistanceMap> sD){
+        // generate JavaRDD
         JavaRDD<ScoreDistanceMap> rdd = sD.toJavaRDD();
 
         JavaRDD<QueryResult> queryResultRDD = rdd.flatMap(new FlatMapFunction<ScoreDistanceMap, QueryResult>() {

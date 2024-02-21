@@ -10,7 +10,7 @@ import java.util.Map;
 public class ScoreDistanceMap implements Serializable {
     private String id;
     private String title;
-    private NewsArticle article;
+    private NewsArticle article; //article
     private Map<Query, List<Double>> scoreAndDistance;
 
     public ScoreDistanceMap(String id, String title, NewsArticle article, Map<Query, List<Double>> scoreAndDistance) {

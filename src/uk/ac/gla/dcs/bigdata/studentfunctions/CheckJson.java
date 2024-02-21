@@ -15,7 +15,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Valild implements Serializable {
+public class CheckJson implements Serializable {
+    // valid
     public void toFile (SparkSession spark, Dataset<Query> queries, Dataset<ArticleNeeded> news_Filter ){
         Dataset<String> contents = news_Filter.flatMap(
                 (FlatMapFunction<ArticleNeeded, String>) article -> {

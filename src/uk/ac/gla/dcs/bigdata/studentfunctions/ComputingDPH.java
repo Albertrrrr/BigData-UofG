@@ -26,6 +26,7 @@ import static java.lang.Double.NaN;
 public class ComputingDPH implements Serializable {
     private static final long serialVersionUID = 3905684103776472843L;
     public Dataset<ScoreDistanceMap> computingDPHScoreAndDistance (SparkSession spark, Dataset<Query> queries, Dataset<ArticleNeeded> news_Filter ){
+        //c
         List<Query> queriesList = queries.collectAsList();
 
         // 广播查询集

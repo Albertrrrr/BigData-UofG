@@ -16,7 +16,7 @@ public class ArticleNeeded implements Serializable{
     private String title; // article title
     private List<String> contents; // the contents of the article body which subtype is paragraph and limited 5 items
 
-    private NewsArticle article;
+    private NewsArticle article; // article
 
     public ArticleNeeded(){
 

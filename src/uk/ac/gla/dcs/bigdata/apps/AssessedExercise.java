@@ -27,7 +27,7 @@ import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.providedutilities.DPHScorer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.ComputingDPH;
 import uk.ac.gla.dcs.bigdata.studentfunctions.Sorted;
-import uk.ac.gla.dcs.bigdata.studentfunctions.Valild;
+import uk.ac.gla.dcs.bigdata.studentfunctions.CheckJson;
 import uk.ac.gla.dcs.bigdata.studentfunctions.newsInitialFilter;
 import uk.ac.gla.dcs.bigdata.studentstructures.ArticleNeeded;
 import uk.ac.gla.dcs.bigdata.studentstructures.ScoreDistanceMap;
@@ -82,7 +82,7 @@ public class AssessedExercise {
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news articles
 //		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json" ; // default is a sample of 5GB news articles
-		
+		//
 		// Call the student's code
 		List<DocumentRanking> results = rankDocuments(spark, queryFile, newsFile);
 		
@@ -127,7 +127,7 @@ public class AssessedExercise {
 		//news_Filter.show(5,false);
 
 		 //Generate json to check
-		// Valild vid = new Valild();
+		// CheckJson vid = new CheckJson();
 		// vid.toFile(spark,queries,news_Filter);
 
 		//Computing DPH Score and Distance

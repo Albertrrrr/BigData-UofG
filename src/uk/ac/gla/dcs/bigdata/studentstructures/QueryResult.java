@@ -10,7 +10,7 @@ public class QueryResult implements Serializable {
     private String title;
     private Double score;
     private String id;
-    private NewsArticle article;
+    private NewsArticle article; //article
 
     public QueryResult(Query query, String title, Double score, String id, NewsArticle article) {
         this.query = query;
