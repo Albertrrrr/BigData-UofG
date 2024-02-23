@@ -22,6 +22,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 import static java.lang.Double.NaN;
 
+/**
+ * Processing of the original Dataset and generation of compliant data for further computing
+ * It calculates DPH scores and distances between document titles and search queries.
+ * It involves broadcasting queries, computing document lengths and term frequencies, and applying the DPH scoring model.
+ * This class showcases advanced usage of Spark RDDs, broadcasting, and custom scoring algorithms.
+ * @author Ruixian Zhang
+ *
+ */
+
 public class ComputingDPH implements Serializable {
     private static final long serialVersionUID = 3905684103776472843L;
     public Dataset<ScoreDistanceMap> computingDPHScoreAndDistance (SparkSession spark, Dataset<Query> queries, Dataset<ArticleNeeded> news_Filter ){
@@ -74,7 +83,7 @@ public class ComputingDPH implements Serializable {
                 List<ScoreDistanceMap> res = new ArrayList<>();
                 List<Query> queries = queriesBroadcast.value();
 
-                // 文档长度
+                // document length
                 int currentDocumentLength = articleNeeded.getContents().stream()
                         .flatMap(content -> Arrays.stream(content.split(" ")))
                         .collect(Collectors.toList())

@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 /**
  * Processing of the original Dataset and generation of compliant data for further computing
+ * implements a MapFunction to filter and preprocess news articles.
+ * It leverages JSON parsing to extract and process relevant fields, demonstrating data transformation and text processing capabilities.
  * @author Ruixian Zhang
  *
  */

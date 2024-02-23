@@ -6,7 +6,13 @@ import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * To save the DPHScore, A clearer, more structured Bean of storage needs to be devised.
+ * A structure is designed which consists mainly of an id and a key-value pair.
+ * This key-value pair has Query as Key and DPHScore as Value, which will appear to be structured during subsequent sorting.
+ * @author Ruixian Zhang
+ *
+ */
 public class ScoreDistanceMap implements Serializable {
     private String id;
     private String title;

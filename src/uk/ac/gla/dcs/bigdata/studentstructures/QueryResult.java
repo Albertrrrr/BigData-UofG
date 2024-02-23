@@ -5,6 +5,12 @@ import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 
 import java.io.Serializable;
 
+/**
+ * To sorting our result, a more efficient storage structure of result should be designed.
+ * This structure includes two objects for DocumentsRanking class which are Query and NewsArticle, and also has the result of DPHScore computing.
+ * @author Junan Zheng
+ *
+ */
 public class QueryResult implements Serializable {
     private Query query; // The query associated with this result
     private String title; // The title of the news article

@@ -14,6 +14,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Processing of the original Dataset and generation of compliant data for further computing
+ * It serializes instances and processes datasets of ArticleNeeded objects.
+ * It transforms these datasets to extract article contents, demonstrating efficient handling of null values and file operations within a Spark application.
+ * @author Ruixian Zhang
+ *
+ */
+
 //Allowing instances of this class to be serialized, a requirement for distributed computing scenarios often encountered in Spark applications.
 public class CheckJson implements Serializable {
     // valid

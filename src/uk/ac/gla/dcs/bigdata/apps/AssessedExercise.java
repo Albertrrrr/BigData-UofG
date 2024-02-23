@@ -134,7 +134,7 @@ public class AssessedExercise {
 		ComputingDPH dphGenerator = new ComputingDPH();
 		Dataset<ScoreDistanceMap> dphScoreAndDistance = dphGenerator.computingDPHScoreAndDistance(spark,queries,news_Filter); // get DPHScore and Distance structure
 
-		// Sort it
+		// Sort it and return result of DocumentRankingList
 		Sorted sortOperator = new Sorted();
 		List<DocumentRanking> documentRankingList = sortOperator.ranking(dphScoreAndDistance);
 
