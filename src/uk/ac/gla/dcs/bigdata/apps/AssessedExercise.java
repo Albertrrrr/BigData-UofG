@@ -87,7 +87,7 @@ public class AssessedExercise {
 		List<DocumentRanking> results = rankDocuments(spark, queryFile, newsFile);
 		
 		// Close the spark session
-		spark.close();
+		// spark.close();
 		
 		// Check if the code returned any results
 		if (results==null) System.err.println("Topology return no rankings, student code may not be implemented, skiping final write.");
