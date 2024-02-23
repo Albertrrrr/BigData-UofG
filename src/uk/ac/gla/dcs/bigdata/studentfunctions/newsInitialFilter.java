@@ -26,9 +26,10 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
 
     @Override
     public ArticleNeeded call(Row value) throws Exception {
+        // Check if ObjectMapper is not initialized and initialize it
         if (jsonMapper == null) jsonMapper = new ObjectMapper();
 
-        //Parsing Raw Data with Jackson
+        // Parse the row into a NewsArticle object
         NewsArticle originalArticle = jsonMapper.readValue(value.mkString(), NewsArticle.class);
 
         // Create a new NewsArticle object containing only the required fields
@@ -37,33 +38,39 @@ public class newsInitialFilter implements MapFunction<Row,ArticleNeeded> {
         filteredArticle.setTitle(originalArticle.getTitle());
         filteredArticle.setArticle(originalArticle);
 
+        // Filter and process the contents of the NewsArticle
         List<String> filteredContentStrings = originalArticle.getContents().stream()
                 .filter(item -> item != null && "paragraph".equals(item.getSubtype())) //First filter out items that are not null and have a subtype of paragraph
                 .map(ContentItem::getContent) // Converts each ContentItem to string.
                 .collect(Collectors.toList()); // Result into List<String>
 
 
-        // Limited 5 items in every Content
+        // Limit the contents to the first 5 items if there are more than 5
         if (filteredContentStrings.size() > 5) {
             filteredContentStrings = filteredContentStrings.subList(0, 5);
         }
-        //add title to contents
+
+        // Add the title to the list of contents to be processed
         filteredContentStrings.add(filteredArticle.getTitle());
 
         // Check items and set contents.
         // System.out.println("Contents Count: " + Integer.toString(filteredContentStrings.size()));
 
-        // processing Text
+        // Initialize TextPreProcessor for further text processing
         TextPreProcessor text = new TextPreProcessor();
         List<String> processedText = new ArrayList<>();
 
+        // Process each term in the filtered content strings
         for(String term: filteredContentStrings){
             List<String> processedTerms = text.process(term);
             String processedRes = String.join(" ",processedTerms);
             processedText.add(processedRes);
         }
+
+        // Set the processed contents in the ArticleNeeded object
         filteredArticle.setContents(processedText);
 
+        // Return the processed ArticleNeeded object
         return filteredArticle;
     }
 }

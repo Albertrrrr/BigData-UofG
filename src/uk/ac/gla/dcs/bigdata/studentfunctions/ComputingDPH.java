@@ -26,14 +26,14 @@ public class ComputingDPH implements Serializable {
     private static final long serialVersionUID = 3905684103776472843L;
     public Dataset<ScoreDistanceMap> computingDPHScoreAndDistance (SparkSession spark, Dataset<Query> queries, Dataset<ArticleNeeded> news_Filter ){
 
-        // Computing
+        // Collect queries into a list
         List<Query> queriesList = queries.collectAsList();
 
-        // 广播查询集
+        // Broadcast the list of queries
         JavaSparkContext sparkContext = new JavaSparkContext(spark.sparkContext());
         Broadcast<List<Query>> queriesBroadcast = sparkContext.broadcast(queriesList);
 
-        // 计算文档长度的Dataset
+        // Compute a Dataset of document lengths
         Dataset<Integer> documentLengths = news_Filter.map(new MapFunction<ArticleNeeded, Integer>() {
             @Override
             public Integer call(ArticleNeeded article) throws Exception {
@@ -44,13 +44,14 @@ public class ComputingDPH implements Serializable {
             }
         }, Encoders.INT());
 
+        // Calculate the total length of all documents and the total number of documents
         long totalLength = documentLengths.javaRDD().reduce((a, b) -> a + b);
-        // 计算总文档数
         long totalDocs = news_Filter.count();
 
-        // 计算平均文档长度
+        // Calculate the average document length in the corpus
         double averageDocumentLengthInCorpus = (double) totalLength / totalDocs;
 
+        // Convert news_Filter to an RDD and flatMap to words
         JavaRDD<ArticleNeeded> newsRDD = news_Filter.toJavaRDD();
         JavaRDD<String> words = newsRDD.flatMap(article ->
                 article.getContents().stream()
@@ -58,14 +59,15 @@ public class ComputingDPH implements Serializable {
                         .iterator()
         );
 
-        // 计算词频
+        // Count word frequencies
         JavaPairRDD<String, Integer> wordCounts = words.mapToPair(word -> new Tuple2<>(word, 1))
                 .reduceByKey(Integer::sum);
 
-        // 收集并广播词频Map
+        // Collect and broadcast the term frequencies map
         Map<String, Integer> termFrequencies = wordCounts.collectAsMap();
         Broadcast<Map<String, Integer>> termFrequenciesBroadcast = sparkContext.broadcast(termFrequencies);
 
+        // Compute scores and distances
         Dataset<ScoreDistanceMap> scoreAndDistance = news_Filter.flatMap(new FlatMapFunction<ArticleNeeded, ScoreDistanceMap>() {
             @Override
             public Iterator<ScoreDistanceMap> call(ArticleNeeded articleNeeded) throws Exception {
@@ -89,18 +91,21 @@ public class ComputingDPH implements Serializable {
 
                     Double dphScoreSum = 0.0;
                     for (String term : query.getQueryTerms()) {
-                        // 当前文档中术语的频率
+                        // Frequency of terms in the current document
                         long termFrequencyInCurrentDocument = articleNeeded.getContents().stream()
-                                .flatMap(content -> Arrays.stream(content.split(" "))) // 分割每个字符串并扁平化
-                                .filter(word -> word.equalsIgnoreCase(term)) // 忽略大小写进行比较
+                                // Split and flatten each string
+                                .flatMap(content -> Arrays.stream(content.split(" ")))
+                                // Ignore case for comparison
+                                .filter(word -> word.equalsIgnoreCase(term))
                                 .count();
-                        // 语料库中术语的总频率
+
+                        // Total frequency of terms in the corpus
                         if(termFrequencyInCurrentDocument == 0){
                             continue;
                         }
                         int totalTermFrequencyInCorpus = termFrequenciesBroadcast.value().getOrDefault(term, 0);
 
-                        // 计算DPH得分
+                        // Calculate DPH score
                         double dphScore = DPHScorer.getDPHScore(
                                 (short) termFrequencyInCurrentDocument,
                                 totalTermFrequencyInCorpus,
@@ -117,8 +122,11 @@ public class ComputingDPH implements Serializable {
                     numbers.add(distance);
                     map.put(query,numbers);
                 }
-                boolean anyNonZero = map.values().stream() // 将values集合转换为Stream
-                        .anyMatch(list -> !list.isEmpty() && !list.get(0).equals(0.0)); // 使用anyMatch检查是否存在第一个元素不是0.0的列表
+                // Convert the values collection to a Stream.
+                boolean anyNonZero = map.values().stream()
+
+                        // Use anyMatch to check if there is a list whose first element is not 0.0.
+                        .anyMatch(list -> !list.isEmpty() && !list.get(0).equals(0.0));
 
                 if(anyNonZero == true){res.add(new ScoreDistanceMap(articleNeeded.getId(),articleNeeded.getTitle(),articleNeeded.getArticle(),map));}
 
