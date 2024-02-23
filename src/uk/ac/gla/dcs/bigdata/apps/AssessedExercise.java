@@ -80,8 +80,8 @@ public class AssessedExercise {
 		
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
-		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news articles
-//		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json" ; // default is a sample of 5GB news articles
+//		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news articles
+		if (newsFile==null) newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json" ; // default is a sample of 5GB news articles
 		//
 		// Call the student's code
 		List<DocumentRanking> results = rankDocuments(spark, queryFile, newsFile);
@@ -134,7 +134,7 @@ public class AssessedExercise {
 		ComputingDPH dphGenerator = new ComputingDPH();
 		Dataset<ScoreDistanceMap> dphScoreAndDistance = dphGenerator.computingDPHScoreAndDistance(spark,queries,news_Filter); // get DPHScore and Distance structure
 
-		// Sort it
+		// Sort it and return result of DocumentRankingList
 		Sorted sortOperator = new Sorted();
 		List<DocumentRanking> documentRankingList = sortOperator.ranking(dphScoreAndDistance);
 

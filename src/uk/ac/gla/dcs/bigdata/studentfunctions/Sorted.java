@@ -20,6 +20,14 @@ import java.util.stream.StreamSupport;
 import java.util.function.Function;
 import static org.apache.spark.sql.functions.col;
 
+/**
+ * Processing of the original Dataset and generation of compliant data for further computing
+ * It processes datasets of ScoreDistanceMap objects to rank documents based on custom criteria.
+ * It demonstrates complex RDD transformations, grouping, sorting, and filtering operations to produce ranked lists of documents.
+ * @author Junan Zheng
+ *
+ */
+
 public class Sorted implements Serializable {
 
     public List<DocumentRanking> ranking (Dataset<ScoreDistanceMap> sD){
